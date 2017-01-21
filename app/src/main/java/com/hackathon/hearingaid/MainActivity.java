@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;*/
 import android.os.ParcelFileDescriptor;
+import android.text.format.Formatter;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +21,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import java.net.ServerSocket;
 import android.os.Handler;
+import android.net.wifi.WifiManager;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -72,7 +74,9 @@ public class MainActivity extends Activity {
         mHolder = mView.getHolder();
         mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);*/
 
-        //SERVERIP = "192.168.1.126";
+        WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
+        String ip = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
+        SERVERIP = ip;
         // Run new thread to handle socket communications
         Thread sendVideo = new Thread(new SendVideoThread());
         sendVideo.start();
