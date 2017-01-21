@@ -12,14 +12,17 @@ import android.os.Bundle;
 /*import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;*/
+import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import java.net.ServerSocket;
+import android.os.Handler;
 
 import java.io.IOException;
+import java.net.Socket;
 
 /*public class MainActivity extends Activity {
 
@@ -40,8 +43,9 @@ public class MainActivity extends Activity {
     // Networking variables
     public static String SERVERIP = "";
     public static final int SERVERPORT = 6775;
-    //private Handler handler = new Handler();
+    private Handler handler = new Handler();
     private ServerSocket serverSocket;
+    private static final String TAG = "MyActivity";
 
     /*@Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -68,7 +72,7 @@ public class MainActivity extends Activity {
         mHolder = mView.getHolder();
         mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);*/
 
-        SERVERIP = "192.168.1.126";
+        //SERVERIP = "192.168.1.126";
         // Run new thread to handle socket communications
         Thread sendVideo = new Thread(new SendVideoThread());
         sendVideo.start();
@@ -82,7 +86,7 @@ public class MainActivity extends Activity {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            connectionStatus.setText("Listening on IP: " + SERVERIP);
+                            Log.e(TAG, "Listening on IP: " + SERVERIP);
                         }
                     });
                     serverSocket = new ServerSocket(SERVERPORT);
@@ -92,7 +96,7 @@ public class MainActivity extends Activity {
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
-                                connectionStatus.setText("Connected.");
+                                Log.e(TAG, "Connected.");
                             }
                         });
                         try {
@@ -102,13 +106,14 @@ public class MainActivity extends Activity {
                                 @Override
                                 public void run() {
                                     recorder = new MediaRecorder();
-                                    recorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
+                                    recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
                                     recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+                                    recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
                                     recorder.setOutputFile(pfd.getFileDescriptor());
-                                    recorder.setVideoFrameRate(20);
+                                    /*recorder.setVideoFrameRate(20);
                                     recorder.setVideoSize(176, 144);
                                     recorder.setVideoEncoder(MediaRecorder.VideoEncoder.H263);
-                                    recorder.setPreviewDisplay(mHolder.getSurface());
+                                    recorder.setPreviewDisplay(mHolder.getSurface());*/
                                     try {
                                         recorder.prepare();
                                     } catch (IllegalStateException e) {
@@ -125,7 +130,7 @@ public class MainActivity extends Activity {
                             handler.post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    connectionStatus.setText("Oops.Connection interrupted. Please reconnect your phones.");
+                                    Log.e(TAG, "Oops.Connection interrupted. Please reconnect your phones.");
                                 }
                             });
                             e.printStackTrace();
@@ -135,7 +140,7 @@ public class MainActivity extends Activity {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            connectionStatus.setText("Couldn't detect internet connection.");
+                            Log.e(TAG, "Couldn't detect internet connection.");
                         }
                     });
                 }
@@ -143,7 +148,7 @@ public class MainActivity extends Activity {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        connectionStatus.setText("Error");
+                        Log.e(TAG,"Error");
                     }
                 });
                 e.printStackTrace();
