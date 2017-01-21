@@ -67,7 +67,7 @@ public class PulseSoundThread implements Runnable {
 		 * .getNativeOutputSampleRate(AudioManager.STREAM_MUSIC);
 		 */
         // TODO native audio?
-        final int sampleRate = 24000;
+        final int sampleRate = 48000;
 
         int musicLength = AudioTrack.getMinBufferSize(sampleRate,
                 AudioFormat.CHANNEL_CONFIGURATION_STEREO,
