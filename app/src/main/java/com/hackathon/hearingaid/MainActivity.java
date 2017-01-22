@@ -48,6 +48,7 @@ import com.microsoft.cognitiveservices.speechrecognition.ISpeechRecognitionServe
 import com.microsoft.cognitiveservices.speechrecognition.MicrophoneRecognitionClient;
 import com.microsoft.cognitiveservices.speechrecognition.RecognitionResult;
 import com.microsoft.cognitiveservices.speechrecognition.RecognitionStatus;
+import com.microsoft.cognitiveservices.speechrecognition.SpeechAudioFormat;
 import com.microsoft.cognitiveservices.speechrecognition.SpeechRecognitionMode;
 import com.microsoft.cognitiveservices.speechrecognition.SpeechRecognitionServiceFactory;
 import java.io.InputStream;
@@ -55,6 +56,11 @@ import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends Activity implements ISpeechRecognitionServerEvents
 {
+    public final static int MAX_BUFFER = 4096;
+
+    public static volatile byte[] speechBuffer = new byte[MAX_BUFFER];
+    public static volatile int bufferCount = 0;
+
     int m_waitSeconds = 0;
     DataRecognitionClient dataClient = null;
     MicrophoneRecognitionClient micClient = null;
@@ -63,6 +69,11 @@ public class MainActivity extends Activity implements ISpeechRecognitionServerEv
     RadioGroup _radioGroup;
     Button _buttonSelectMode;
     Button _startButton;
+
+    // PulseDroid
+
+    boolean playState = false;
+    PulseSoundThread playThread = null;
 
     public enum FinalResponseStatus { NotReceived, OK, Timeout }
 
@@ -117,7 +128,7 @@ public class MainActivity extends Activity implements ISpeechRecognitionServerEv
     private SpeechRecognitionMode getMode() {
         int id = this._radioGroup.getCheckedRadioButtonId();
         if (id == R.id.micDictationRadioButton ||
-                id == R.id.dataLongRadioButton) {
+                id == R.id.dataAudioStreamButton) {
             return SpeechRecognitionMode.LongDictation;
         }
 
@@ -146,6 +157,32 @@ public class MainActivity extends Activity implements ISpeechRecognitionServerEv
      */
     private String getLongWaveFile() {
         return "batman.wav";
+    }
+
+    private void startListenThread() {
+        if (false == playState) {
+            playState = true;
+            if (null != playThread) {
+                playThread.Terminate();
+                playThread = null;
+            }
+
+            //  final EditText server = (EditText) findViewById(R.id.EditTextServer);
+            //final EditText port = (EditText) findViewById(R.id.EditTextPort);
+
+            final String server = "100.64.84.67";
+            final String port = "8001";
+
+            playThread = new PulseSoundThread(server, port);
+            new Thread(playThread).start();
+
+        } else {
+            playState = false;
+            if (null != playThread) {
+                playThread.Terminate();
+                playThread = null;
+            }
+        }
     }
 
     @Override
@@ -178,6 +215,15 @@ public class MainActivity extends Activity implements ISpeechRecognitionServerEv
         this._buttonSelectMode.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View arg0) {
+                playState = false;
+                if (null != playThread) {
+                    playThread.Terminate();
+                    playThread = null;
+                }
+                _startButton.setEnabled(true);
+
+                //moveTaskToBack(true);
+
                 This.ShowMenu(This._radioGroup.getVisibility() == View.INVISIBLE);
             }
         });
@@ -262,9 +308,12 @@ public class MainActivity extends Activity implements ISpeechRecognitionServerEv
                             this.getDefaultLocale(),
                             this,
                             this.getPrimaryKey());
+
+
+
                 }
             }
-
+            startListenThread();
             this.SendAudioHelper((this.getMode() == SpeechRecognitionMode.ShortPhrase) ? this.getShortWaveFile() : this.getLongWaveFile());
         }
     }
@@ -441,19 +490,19 @@ public class MainActivity extends Activity implements ISpeechRecognitionServerEv
                 // audio data, you must first send up an SpeechAudioFormat descriptor to describe
                 // the layout and format of your raw audio data via DataRecognitionClient's sendAudioFormat() method.
                 // String filename = recoMode == SpeechRecognitionMode.ShortPhrase ? "whatstheweatherlike.wav" : "batman.wav";
-                InputStream fileStream = getAssets().open(filename);
-                int bytesRead = 0;
-                byte[] buffer = new byte[1024];
+                int sampleRate = 16000;
+                SpeechAudioFormat PCM_format = SpeechAudioFormat.create16BitPCMFormat(sampleRate);
+
+                dataClient.sendAudioFormat(PCM_format);
 
                 do {
                     // Get  Audio data to send into byte buffer.
-                    bytesRead = fileStream.read(buffer);
-
-                    if (bytesRead > -1) {
+                    if (bufferCount > 1000) {
                         // Send of audio data to service.
-                        dataClient.sendAudio(buffer, bytesRead);
+                        dataClient.sendAudio(speechBuffer, bufferCount);
+                        bufferCount = 0;
                     }
-                } while (bytesRead > 0);
+                } while (playThread != null);
 
             } catch (Throwable throwable) {
                 throwable.printStackTrace();

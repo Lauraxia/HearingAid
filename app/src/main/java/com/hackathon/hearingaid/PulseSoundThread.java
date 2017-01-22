@@ -67,13 +67,13 @@ public class PulseSoundThread implements Runnable {
 		 * .getNativeOutputSampleRate(AudioManager.STREAM_MUSIC);
 		 */
         // TODO native audio?
-        final int sampleRate = 48000;
+        final int sampleRate = 16000;
 
         int musicLength = AudioTrack.getMinBufferSize(sampleRate,
-                AudioFormat.CHANNEL_CONFIGURATION_STEREO,
+                AudioFormat.CHANNEL_CONFIGURATION_MONO,
                 AudioFormat.ENCODING_PCM_16BIT);
         AudioTrack audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC,
-                sampleRate, AudioFormat.CHANNEL_CONFIGURATION_STEREO,
+                sampleRate, AudioFormat.CHANNEL_CONFIGURATION_MONO,
                 AudioFormat.ENCODING_PCM_16BIT, musicLength,
                 AudioTrack.MODE_STREAM);
         audioTrack.play();
@@ -84,6 +84,12 @@ public class PulseSoundThread implements Runnable {
         while (false == mTerminate) {
             try {
                 int sizeRead = audioData.read(audioBuffer, 0, musicLength * 8);
+                int idx = 0;
+                for(int i = MainActivity.bufferCount; i < MainActivity.bufferCount + sizeRead; ++i) {
+                    MainActivity.speechBuffer[i % MainActivity.MAX_BUFFER] = audioBuffer[idx++];
+                }
+                MainActivity.bufferCount = (MainActivity.bufferCount + sizeRead) % MainActivity.MAX_BUFFER;
+
                 int sizeWrite = audioTrack.write(audioBuffer, 0, sizeRead);
                 if (sizeWrite == AudioTrack.ERROR_INVALID_OPERATION) {
                     sizeWrite = 0;
