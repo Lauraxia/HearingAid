@@ -56,6 +56,8 @@ import java.util.concurrent.TimeUnit;
 
 public class MainActivity2 extends Activity implements ISpeechRecognitionServerEvents
 {
+    boolean micDebugMode = false;
+
     public final static int MAX_BUFFER = 4096;
 
     public static volatile byte[] speechBuffer = new byte[MAX_BUFFER];
@@ -69,6 +71,7 @@ public class MainActivity2 extends Activity implements ISpeechRecognitionServerE
     MicrophoneRecognitionClient micClient = null;
     FinalResponseStatus isReceivedResponse = FinalResponseStatus.NotReceived;
     EditText _logText;
+    EditText finalText;
     RadioGroup _radioGroup;
     Button _buttonSelectMode;
     Button _startButton;
@@ -111,10 +114,7 @@ public class MainActivity2 extends Activity implements ISpeechRecognitionServerE
      * @return true if [use microphone]; otherwise, false.
      */
     private Boolean getUseMicrophone() {
-        int id = this._radioGroup.getCheckedRadioButtonId();
-        return id == R.id.micIntentRadioButton ||
-                id == R.id.micDictationRadioButton ||
-                id == (R.id.micRadioButton - 1);
+        return micDebugMode;
     }
 
     /**
@@ -122,9 +122,7 @@ public class MainActivity2 extends Activity implements ISpeechRecognitionServerE
      * @return true if LUIS results are to be returned otherwise, false.
      */
     private Boolean getWantIntent() {
-        int id = this._radioGroup.getCheckedRadioButtonId();
-        return id == R.id.dataShortIntentRadioButton ||
-                id == R.id.micIntentRadioButton;
+        return false;
     }
 
     /**
@@ -132,13 +130,7 @@ public class MainActivity2 extends Activity implements ISpeechRecognitionServerE
      * @return The speech recognition mode.
      */
     private SpeechRecognitionMode getMode() {
-        int id = this._radioGroup.getCheckedRadioButtonId();
-        if (id == R.id.micDictationRadioButton ||
-                id == R.id.dataAudioStreamButton) {
             return SpeechRecognitionMode.LongDictation;
-        }
-
-        return SpeechRecognitionMode.ShortPhrase;
     }
 
     /**
@@ -197,7 +189,8 @@ public class MainActivity2 extends Activity implements ISpeechRecognitionServerE
         setContentView(R.layout.activity_main2);
 
         this._logText = (EditText) findViewById(R.id.editText1);
-        this._radioGroup = (RadioGroup)findViewById(R.id.groupMode);
+        this.finalText = (EditText) findViewById(R.id.finalMessage);
+        this.finalText.setVisibility(View.VISIBLE);
         this._buttonSelectMode = (Button)findViewById(R.id.buttonSelectMode);
         this._startButton = (Button) findViewById(R.id.button1);
 
@@ -234,14 +227,6 @@ public class MainActivity2 extends Activity implements ISpeechRecognitionServerE
 
                 //moveTaskToBack(true);
 
-                This.ShowMenu(This._radioGroup.getVisibility() == View.INVISIBLE);
-            }
-        });
-
-        this._radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup rGroup, int checkedId) {
-                This.RadioButton_Click(rGroup, checkedId);
             }
         });
 
@@ -249,11 +234,9 @@ public class MainActivity2 extends Activity implements ISpeechRecognitionServerE
     }
 
     private void ShowMenu(boolean show) {
-        if (show) {
-            this._radioGroup.setVisibility(View.VISIBLE);
+        if (show) {;
             this._logText.setVisibility(View.INVISIBLE);
-        } else {
-            this._radioGroup.setVisibility(View.INVISIBLE);
+        } else {;
             this._logText.setText("");
             this._logText.setVisibility(View.VISIBLE);
         }
@@ -262,16 +245,36 @@ public class MainActivity2 extends Activity implements ISpeechRecognitionServerE
      * Handles the Click event of the _startButton control.
      */
     private void StartButton_Click(View arg0) {
-        this._startButton.setEnabled(false);
-        this._radioGroup.setEnabled(false);
+        //this._startButton.setEnabled(false);
+        //this._radioGroup.setEnabled(false);
 
-        this.m_waitSeconds = this.getMode() == SpeechRecognitionMode.ShortPhrase ? 20 : 200;
+        // Reset everything
+        if (this.micClient != null) {
+            this.micClient.endMicAndRecognition();
+            try {
+                this.micClient.finalize();
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
+            this.micClient = null;
+        }
+        if (this.dataClient != null) {
+            try {
+                this.dataClient.finalize();
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
+            this.dataClient = null;
+        }
+
+        this.m_waitSeconds = 200;
 
         this.ShowMenu(false);
 
         this.LogRecognitionStart();
 
-        if (this.getUseMicrophone()) {
+
+        if (micDebugMode) {
             if (this.micClient == null) {
                 if (this.getWantIntent()) {
                     this.WriteLine("--- Start microphone dictation with Intent detection ----");
@@ -324,7 +327,7 @@ public class MainActivity2 extends Activity implements ISpeechRecognitionServerE
                 }
             }
             startListenThread();
-            this.SendAudioHelper((this.getMode() == SpeechRecognitionMode.ShortPhrase) ? this.getShortWaveFile() : this.getLongWaveFile());
+            this.SendAudioHelper( this.getLongWaveFile());
         }
     }
 
@@ -378,7 +381,13 @@ public class MainActivity2 extends Activity implements ISpeechRecognitionServerE
                 this.WriteLine(response.Results[i].DisplayText + "\n");
             }
 
+            for (int i = 0; i < response.Results.length; i++) {
+                this.finalText.append(response.Results[i].DisplayText + "\n");
+            }
+
             this.WriteLine();
+
+
         }
     }
 
@@ -426,7 +435,7 @@ public class MainActivity2 extends Activity implements ISpeechRecognitionServerE
      * Writes the line.
      */
     private void WriteLine() {
-        this.WriteLine("");
+     //   this.WriteLine("");
     }
 
     /**
@@ -434,38 +443,15 @@ public class MainActivity2 extends Activity implements ISpeechRecognitionServerE
      * @param text The line to write.
      */
     private void WriteLine(String text) {
-        this._logText.append(text + "\n");
+        this._logText.setText(text + "\n");
     }
 
-    /**
+    /*
      * Handles the Click event of the RadioButton control.
      * @param rGroup The radio grouping.
      * @param checkedId The checkedId.
      */
-    private void RadioButton_Click(RadioGroup rGroup, int checkedId) {
-        // Reset everything
-        if (this.micClient != null) {
-            this.micClient.endMicAndRecognition();
-            try {
-                this.micClient.finalize();
-            } catch (Throwable throwable) {
-                throwable.printStackTrace();
-            }
-            this.micClient = null;
-        }
 
-        if (this.dataClient != null) {
-            try {
-                this.dataClient.finalize();
-            } catch (Throwable throwable) {
-                throwable.printStackTrace();
-            }
-            this.dataClient = null;
-        }
-
-        this.ShowMenu(false);
-        this._startButton.setEnabled(true);
-    }
 
     /*
      * Speech recognition with data (for example from a file or audio source).
