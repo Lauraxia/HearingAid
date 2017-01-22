@@ -341,8 +341,8 @@ public class MainActivity2 extends Activity implements ISpeechRecognitionServerE
             recoSource = "long wav file";
         }
 
-        this.WriteLine("\n--- Start speech recognition using " + recoSource + " with " + this.getMode() + " mode in " + this.getDefaultLocale() + " language ----\n\n");
-    }
+        this.WriteLine("\n--- Starting to stream and transcribe audio... ---\n\n");
+        }
 
     private void SendAudioHelper(String filename) {
         RecognitionTask doDataReco = new RecognitionTask(this.dataClient, this.getMode(), filename);
@@ -374,10 +374,8 @@ public class MainActivity2 extends Activity implements ISpeechRecognitionServerE
         }
 
         if (!isFinalDicationMessage) {
-            this.WriteLine("********* Final n-BEST Results *********");
             for (int i = 0; i < response.Results.length; i++) {
-                this.WriteLine("[" + i + "]" + " Confidence=" + response.Results[i].Confidence +
-                        " Text=\"" + response.Results[i].DisplayText + "\"");
+                this.WriteLine(response.Results[i].DisplayText + "\n");
             }
 
             this.WriteLine();
@@ -394,7 +392,6 @@ public class MainActivity2 extends Activity implements ISpeechRecognitionServerE
     }
 
     public void onPartialResponseReceived(final String response) {
-        this.WriteLine("--- Partial result received by onPartialResponseReceived() ---");
         this.WriteLine(response);
         this.WriteLine();
     }
