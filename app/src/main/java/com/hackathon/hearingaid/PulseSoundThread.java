@@ -13,6 +13,8 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 
+import com.microsoft.cognitiveservices.speechrecognition.SpeechAudioFormat;
+
 public class PulseSoundThread implements Runnable {
     private boolean mTerminate = false;
     private String mServer;
@@ -80,16 +82,22 @@ public class PulseSoundThread implements Runnable {
 
         // TODO buffer size computation
         byte[] audioBuffer = new byte[musicLength * 8];
+        SpeechAudioFormat PCM_format = SpeechAudioFormat.create16BitPCMFormat(sampleRate);
+        MainActivity.dataClient.sendAudioFormat(PCM_format);
 
         while (false == mTerminate) {
             try {
                 int sizeRead = audioData.read(audioBuffer, 0, musicLength * 8);
+
+                //int sampleRate = 16000;
+                MainActivity.dataClient.sendAudio(audioBuffer, sizeRead);
+                /*
                 int idx = 0;
                 for(int i = MainActivity.bufferCount; i < MainActivity.bufferCount + sizeRead; ++i) {
                     MainActivity.speechBuffer[i % MainActivity.MAX_BUFFER] = audioBuffer[idx++];
                 }
                 MainActivity.bufferCount = (MainActivity.bufferCount + sizeRead) % MainActivity.MAX_BUFFER;
-
+                */
                 int sizeWrite = audioTrack.write(audioBuffer, 0, sizeRead);
                 if (sizeWrite == AudioTrack.ERROR_INVALID_OPERATION) {
                     sizeWrite = 0;
@@ -97,6 +105,8 @@ public class PulseSoundThread implements Runnable {
                 if (sizeWrite == AudioTrack.ERROR_BAD_VALUE) {
                     sizeWrite = 0;
                 }
+
+
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();

@@ -56,13 +56,13 @@ import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends Activity implements ISpeechRecognitionServerEvents
 {
-    public final static int MAX_BUFFER = 4096;
+    public final static int MAX_BUFFER = 32000;
 
     public static volatile byte[] speechBuffer = new byte[MAX_BUFFER];
     public static volatile int bufferCount = 0;
 
     int m_waitSeconds = 0;
-    DataRecognitionClient dataClient = null;
+    static DataRecognitionClient dataClient = null;
     MicrophoneRecognitionClient micClient = null;
     FinalResponseStatus isReceivedResponse = FinalResponseStatus.NotReceived;
     EditText _logText;
@@ -160,6 +160,7 @@ public class MainActivity extends Activity implements ISpeechRecognitionServerEv
     }
 
     private void startListenThread() {
+
         if (false == playState) {
             playState = true;
             if (null != playThread) {
@@ -483,6 +484,7 @@ public class MainActivity extends Activity implements ISpeechRecognitionServerEv
 
         @Override
         protected Void doInBackground(Void... params) {
+            /*
             try {
                 // Note for wave files, we can just send data from the file right to the server.
                 // In the case you are not an audio file in wave format, and instead you have just
@@ -491,13 +493,13 @@ public class MainActivity extends Activity implements ISpeechRecognitionServerEv
                 // the layout and format of your raw audio data via DataRecognitionClient's sendAudioFormat() method.
                 // String filename = recoMode == SpeechRecognitionMode.ShortPhrase ? "whatstheweatherlike.wav" : "batman.wav";
                 int sampleRate = 16000;
-                SpeechAudioFormat PCM_format = SpeechAudioFormat.create16BitPCMFormat(sampleRate);
+                WriteLine("--- Sending shit to Microsoft ---");
 
+                SpeechAudioFormat PCM_format = SpeechAudioFormat.create16BitPCMFormat(sampleRate);
                 dataClient.sendAudioFormat(PCM_format);
 
                 do {
                     // Get  Audio data to send into byte buffer.
-                    if (bufferCount > 1000) {
                         // Send of audio data to service.
                         dataClient.sendAudio(speechBuffer, bufferCount);
                         bufferCount = 0;
@@ -510,7 +512,7 @@ public class MainActivity extends Activity implements ISpeechRecognitionServerEv
             finally {
                 dataClient.endAudio();
             }
-
+            */
             return null;
         }
     }
