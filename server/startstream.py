@@ -13,7 +13,7 @@ print(ip)
 qr = pyqrcode.create(ip)
 qr.png(os.getcwd() + '//qr.png', scale=12)
 from subprocess import call
-startcall = "pactl load-module module-simple-protocol-tcp rate=48000 format=s16le channels=2 source=alsa_output.pci-0000_00_1b.0.analog-stereo.monitor record=true port=8001 listen=" + ip;
+startcall = "pactl load-module module-simple-protocol-tcp rate=16000 format=s16le channels=1 source=alsa_output.pci-0000_00_1b.0.analog-stereo.monitor record=true port=8001 listen=" + ip;
 call(shlex.split(startcall))
 
 webbrowser.open('file://' + os.getcwd() + "//deployqr.html") #os.path.realpath("deployqr.html"))
