@@ -83,20 +83,21 @@ public class PulseSoundThread implements Runnable {
         // TODO buffer size computation
         byte[] audioBuffer = new byte[musicLength * 8];
         SpeechAudioFormat PCM_format = SpeechAudioFormat.create16BitPCMFormat(sampleRate);
-        MainActivity.dataClient.sendAudioFormat(PCM_format);
+        MainActivity2.dataClient.sendAudioFormat(PCM_format);
 
         while (false == mTerminate) {
             try {
                 int sizeRead = audioData.read(audioBuffer, 0, musicLength * 8);
 
                 //int sampleRate = 16000;
-                MainActivity.dataClient.sendAudio(audioBuffer, sizeRead);
+                MainActivity2.dataClient.sendAudio(audioBuffer, sizeRead);
                 /*
                 int idx = 0;
-                for(int i = MainActivity.bufferCount; i < MainActivity.bufferCount + sizeRead; ++i) {
-                    MainActivity.speechBuffer[i % MainActivity.MAX_BUFFER] = audioBuffer[idx++];
+                for(int i = MainActivity2.bufferCount; i < MainActivity2.bufferCount + sizeRead; ++i) {
+                    MainActivity2.speechBuffer[i % MainActivity2.MAX_BUFFER] = audioBuffer[idx++];
                 }
-                MainActivity.bufferCount = (MainActivity.bufferCount + sizeRead) % MainActivity.MAX_BUFFER;
+
+                MainActivity2.bufferCount = (MainActivity2.bufferCount + sizeRead) % MainActivity2.MAX_BUFFER;
                 */
                 int sizeWrite = audioTrack.write(audioBuffer, 0, sizeRead);
                 if (sizeWrite == AudioTrack.ERROR_INVALID_OPERATION) {
