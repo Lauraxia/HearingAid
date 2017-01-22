@@ -111,7 +111,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     String[] parts = barcode.displayValue.split(":");
                     Intent intent = new Intent(this, MainActivity2.class);
                     intent.putExtra(MainActivity2.ipAddress, parts[0]);
-                    intent.putExtra(MainActivity2.port, Integer.parseInt(parts[1]));
+                    intent.putExtra(MainActivity2.port, parts[1]);
                     startActivity(intent);
 
                 } else {

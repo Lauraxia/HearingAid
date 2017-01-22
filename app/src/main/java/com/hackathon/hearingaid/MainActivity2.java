@@ -73,6 +73,9 @@ public class MainActivity2 extends Activity implements ISpeechRecognitionServerE
     Button _buttonSelectMode;
     Button _startButton;
 
+    String ipAddressValue;
+    String portValue;
+
     // PulseDroid
 
     boolean playState = false;
@@ -173,8 +176,8 @@ public class MainActivity2 extends Activity implements ISpeechRecognitionServerE
             //  final EditText server = (EditText) findViewById(R.id.EditTextServer);
             //final EditText port = (EditText) findViewById(R.id.EditTextPort);
 
-            final String server = "100.64.84.67";
-            final String port = "8001";
+            final String server = ipAddressValue;//"100.64.84.67";
+            final String port = portValue;//"8001";
 
             playThread = new PulseSoundThread(server, port);
             new Thread(playThread).start();
@@ -199,8 +202,8 @@ public class MainActivity2 extends Activity implements ISpeechRecognitionServerE
         this._startButton = (Button) findViewById(R.id.button1);
 
         // read parameters from the intent used to launch the activity.
-        String autoFocus = getIntent().getStringExtra(ipAddress);
-        int useFlash = getIntent().getIntExtra(port, 8001);
+        ipAddressValue = getIntent().getStringExtra(ipAddress);
+        portValue = getIntent().getStringExtra(port);
 
         if (getString(R.string.primaryKey).startsWith("Please")) {
             new AlertDialog.Builder(this)
