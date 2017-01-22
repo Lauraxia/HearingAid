@@ -39,6 +39,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private TextView statusMessage;
     private TextView barcodeValue;
 
+
     private static final int RC_BARCODE_CAPTURE = 9001;
     private static final String TAG = "BarcodeMain";
 
@@ -105,6 +106,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     statusMessage.setText(R.string.barcode_success);
                     barcodeValue.setText(barcode.displayValue);
                     Log.d(TAG, "Barcode read: " + barcode.displayValue);
+
+                    // launch barcode activity.
+                    String[] parts = barcode.displayValue.split(":");
+                    Intent intent = new Intent(this, MainActivity2.class);
+                    intent.putExtra(MainActivity2.ipAddress, parts[0]);
+                    intent.putExtra(MainActivity2.port, Integer.parseInt(parts[1]));
+                    startActivity(intent);
+
                 } else {
                     statusMessage.setText(R.string.barcode_failure);
                     Log.d(TAG, "No barcode captured, intent data is null");

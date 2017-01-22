@@ -61,6 +61,9 @@ public class MainActivity2 extends Activity implements ISpeechRecognitionServerE
     public static volatile byte[] speechBuffer = new byte[MAX_BUFFER];
     public static volatile int bufferCount = 0;
 
+    public static final String ipAddress = "ipAddress";
+    public static final String port = "port";
+
     int m_waitSeconds = 0;
     static DataRecognitionClient dataClient = null;
     MicrophoneRecognitionClient micClient = null;
@@ -194,6 +197,10 @@ public class MainActivity2 extends Activity implements ISpeechRecognitionServerE
         this._radioGroup = (RadioGroup)findViewById(R.id.groupMode);
         this._buttonSelectMode = (Button)findViewById(R.id.buttonSelectMode);
         this._startButton = (Button) findViewById(R.id.button1);
+
+        // read parameters from the intent used to launch the activity.
+        String autoFocus = getIntent().getStringExtra(ipAddress);
+        int useFlash = getIntent().getIntExtra(port, 8001);
 
         if (getString(R.string.primaryKey).startsWith("Please")) {
             new AlertDialog.Builder(this)
