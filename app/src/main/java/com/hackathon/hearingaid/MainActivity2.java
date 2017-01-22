@@ -191,7 +191,7 @@ public class MainActivity2 extends Activity implements ISpeechRecognitionServerE
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main2);
 
         this._logText = (EditText) findViewById(R.id.editText1);
         this._radioGroup = (RadioGroup)findViewById(R.id.groupMode);
@@ -490,6 +490,7 @@ public class MainActivity2 extends Activity implements ISpeechRecognitionServerE
 
         @Override
         protected Void doInBackground(Void... params) {
+            /*
             try {
                 // Note for wave files, we can just send data from the file right to the server.
                 // In the case you are not an audio file in wave format, and instead you have just
@@ -517,7 +518,7 @@ public class MainActivity2 extends Activity implements ISpeechRecognitionServerE
             finally {
                 dataClient.endAudio();
             }
-
+            */
             return null;
         }
     }
